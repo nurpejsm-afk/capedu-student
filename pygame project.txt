@@ -1,0 +1,85 @@
+import pygame
+
+pygame.init()
+
+screen_width = 900
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+
+white = (255, 255, 255)
+black = (0, 0, 0)
+red = (255, 0, 0)
+
+clock = pygame.time.Clock()
+screen_fps = 30
+
+class player:
+    def __init__(self, posx, posy, width, height, color):
+        self.posx = posx
+        self.posy = posy
+        self.width = width
+        self.color = color
+        self.speed = 5
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.posx, self.posy, self.height))
+
+    def move(self, keys, key_up, key_down):
+        if keys[key_up] and self.posy - self.speed >= 0:
+            self.posy -= self.speed
+        if keys[key_down] and self.posy + self.height + self.speed <= screen.height:
+            self.posy += self.speed
+class Myach:
+    def __init__(self, posx, posy,radius, color):
+        self.posx = posx
+        self.posy = posy
+        self.radius = radius
+        self.color = color
+        self.speed_x = 4
+        self.speed_y = 4
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.posx, self.posy), self.radius)
+
+    def move(self):
+        self.posx += self.speed_x
+        self.posy += self.speed_y
+
+        if self.posy - self.radius <= 0 or self.posy + self.radius >= screen_height:
+            self.speed_y *= -1
+        if self.posx - self.radius <= 0 or self.posx + self.radius >= screen_width:
+            self.speed_x *= -1
+
+    def check_sogysu(self, player1, player2):
+        if player1.posx < self.posx < player1.posx + player1.width and player1.posy < self.posy < player1.posy + player1.height:
+            self.speed_x *= -1
+        if player2.posx < self.posx < player2.posx + player2.width and player2.posy < self.posy < player2.posy + player2.height:
+            self.speed_x *= -1
+            running = True
+
+
+player1 = Player(50, 250, 30, 100, white)
+player2 = Player(770, 250, 30, 100, red)
+
+ball = Myach(450, 300, 10, red)
+
+while running:
+    screen.fill(black)
+
+player1.draw(screen)
+player2.draw(screen)
+ball.draw(screen)
+
+pygame.display.update()
+
+for event in pygame.event.get():
+    if event.type == pygame.QUIT:
+        running = False
+keys = pygame.key.get_pressed()
+player1.move(keys, pygame.K_UP, pygame.K_DOWN)
+player2.move(keys, pygame.K_w, pygame.K_s)
+
+ball.move()
+ball.check_sogysu(player1, player2)
+clock.tick(screen_fps)
+
+pygame.quit()

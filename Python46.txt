@@ -1,0 +1,32 @@
+class Client:
+    def __init__(self, name, id):
+        self.name = name
+        self.id = id
+        editname = input('Хотите изменить имя польователя?')
+        if editname == 'Да':
+            newname = input('Введите новое имя пользователя:')
+            name = newname
+        elif editname == 'Нет':
+            print(name)
+        else:
+            print("ОШИБКА!!! ПОПРОБУЙТЕ ЕЩЕ РАЗ!")
+    def depositt(self, amount, code):
+        self.amount = amount
+        self.code = code
+        proverka = int(input("Введите ваш код для снятия"))
+        if proverka == code:
+            print("Добро пожаловать,")
+            withdraw_amount = int(input("Сколько денег вы хотите снять? \n Максимальная сумма снятия 500 ед."))
+            ostatok = 500 - withdraw_amount
+            if withdraw_amount < 500:
+                print("Операция успешна! Вы еще можете снять:", ostatok, "\n вам еще доступны",
+                      amount - withdraw_amount)
+            elif withdraw_amount > 500:
+                print("Сбой операции! Вы можете снять только 500 ед.")
+            else:
+                print("Операция успешна!")
+        else:
+            print("Неверный код! Попробуйте позже!")
+            
+Client1 = Client("Beinur", 1221)
+sniatie1 = Client.depositt(Client, 1000, 30810)

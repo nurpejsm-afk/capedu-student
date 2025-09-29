@@ -1,0 +1,43 @@
+import random
+import string
+
+def generate_password(length):
+    if length < 1:
+        return "ERROR 404!!!!!!"
+
+    symb = string.ascii_lowercase + string.digits + "!@#$%^&*"
+    password = ''.join(random.choice(symb) for _ in range(length))
+    return password
+
+def check_password_strength(password):
+    letters = any(c.isalpha() for c in password)
+    digits = any(c.isdigit() for c in password)
+    specials1 = any(c in "!@#$%^&*" for c in password)
+
+    if len(password) < 8 or (letters and not digits and not specials1):
+        return "Слабый"
+    elif len(password) >= 8 and letters and digits and not specials1:
+        return "Средний"
+    elif len(password) >= 10 and letters and digits and specials1:
+        return "Сильный"
+    else:
+        return "Неопределённая сила"
+
+def main():
+    command = input("Введите команду (generate или check): ").strip().lower()
+
+    if command == "generate":
+        try:
+            length = int(input("Введите длину пароля: "))
+            password = generate_password(length)
+            print("Ваш пароль:", password)
+        except ValueError:
+            print("Ошибка: введите целое число")
+    elif command == "check":
+        password = input("Введите пароль для проверки: ")
+        strength = check_password_strength(password)
+        print("Сила пароля:", strength)
+    else:
+        print("Неизвестная команда")
+
+main()

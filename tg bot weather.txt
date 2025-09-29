@@ -1,0 +1,105 @@
+import telebot
+import requests
+from telebot import types
+
+TELEGRAM_BOT_TOKEN = '7391521133:AAF6J1pZpU3fKWwLsqClrG-IZSPhz5sRQBo'
+WEATHER_API_KEY = 'e056d51cce274e96a54151152253004'
+
+bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+
+def get_weather(city):
+    try:
+        url = f'http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}&aqi=no'
+        response = requests.get(url)
+        data = response.json()
+
+        if 'error' in data:
+            return f"Ошибка: {data['error']['message']}"
+
+        location = data['location']['name']
+        country = data['location']['country']
+        current = data['current']
+        weather_desc = current['condition']['text']
+        temp = current['temp_c']
+        humidity = current['humidity']
+        wind_speed = current['wind_kph']
+        weather_report = (
+            f'Погода в {location}, {country}:\n'
+            f'{weather_desc}\n'
+            f'Температура: {temp}°C\n'
+            f'Влажность: {humidity}%\n'
+            f'Скорость ветра: {wind_speed} км/ч\n'
+        )
+        return weather_report
+    except requests.exceptions.RequestException:
+        return 'Ошибка: не удалось получить данные о погоде.'
+
+def get_forecast(city, days=3):
+    try:
+        url = f'http://api.weatherapi.com/v1/forecast.json?key={WEATHER_API_KEY}&q={city}&days={days}&aqi=no'
+        response = requests.get(url)
+        data = response.json()
+
+        if 'error' in data:
+            return f"Ошибка: {data['error']['message']}"
+
+        location = data['location']['name']
+        country = data['location']['country']
+        forecast = data['forecast']['forecastday']
+        forecast_report = f'Прогноз на {days} дня(ей) в {location}, {country}:\n'
+
+        for day in forecast:
+            date = day['date']
+            condition = day['day']['condition']['text']
+            temp_min = day['day']['mintemp_c']
+            temp_max = day['day']['maxtemp_c']
+            forecast_report += (
+                f'\n📅 {date}:\n'
+                f'{condition}\n'
+                f'Мин: {temp_min}°C, Макс: {temp_max}°C\n'
+            )
+        return forecast_report
+    except requests.exceptions.RequestException:
+        return 'Ошибка: не удалось получить прогноз.'
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    cities = ["New York", "Almaty", "Rome", "Dubai", "Другой город", "/forecast"]
+    for city in cities:
+        markup.add(types.KeyboardButton(city))
+    bot.send_message(message.chat.id, 'Hi! I am bot for the weather, type to me city and I send you weather at the moment)', reply_markup=markup)
+
+@bot.message_handler(commands=['forecast'])
+def ask_forecast_city(message):
+    bot.send_message(message.chat.id, "Введите город, для которого хотите получить прогноз на 3 дня:")
+    bot.register_next_step_handler(message, send_forecast)
+
+def send_forecast(message):
+    city = message.text.strip()
+    forecast = get_forecast(city)
+    bot.send_message(message.chat.id, forecast)
+
+@bot.message_handler(func=lambda message: message.text in ["New York", "Almaty", "Rome", "Dubai"])
+def send_weather_by_button(message):
+    city = message.text
+    weather_report = get_weather(city)
+    bot.send_message(message.chat.id, weather_report)
+
+@bot.message_handler(func=lambda message: message.text == "Другой город")
+def ask_for_city(message):
+    bot.send_message(message.chat.id, "Пожалуйста, введите название города:")
+    bot.register_next_step_handler(message, handle_city_input)
+
+def handle_city_input(message):
+    city = message.text.strip()
+    weather_report = get_weather(city)
+    bot.send_message(message.chat.id, weather_report)
+
+@bot.message_handler(func=lambda message: True)
+def send_weather(message):
+    city = message.text.strip()
+    weather_report = get_weather(city)
+    bot.reply_to(message, weather_report)
+
+bot.polling()

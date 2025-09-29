@@ -1,0 +1,178 @@
+import pygame
+import random
+
+pygame.init()
+
+pygame.mixer.music.load("Sakura-Girl-Daisy-chosic.com_.mp3")
+pygame.mixer.music.play(-1)
+jump_sound = pygame.mixer.Sound("jump-101soundboards.mp3")
+
+width, height = 800, 400
+win = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Dino not internet chrome game)")
+
+dino_width, dino_height = 50, 50
+dino_x, dino_y = 50, height - dino_height - 20
+dino_speed_y = 0
+gravity = 1
+jump_height = -15
+is_jumping = False
+
+
+class Obstacle:
+    def __init__(self, x):
+        self.width = random.randint(20, 40)
+        self.height = random.randint(40, 50)
+        self.x = x
+        self.y = height - self.height - 20
+        self.speed = 10
+
+    def move(self, speed):
+        self.x -= speed
+        if self.x < -self.width:
+            self.x = width + 300
+            return True
+        return False
+
+    def draw(self, win):
+        pygame.draw.rect(win, (0, 0, 0), (self.x, self.y, self.width, self.height))
+
+
+def startgame():
+    font_large = pygame.font.SysFont("Arial", 50)
+    font_small = pygame.font.SysFont("Arial", 30)
+    waiting = True
+
+    while waiting:
+        win.fill((255, 255, 255))
+
+        title_text = font_large.render("Dino Game", True, (0, 0, 0))
+        start_text = font_small.render("Нажми S чтобы начать", True, (0, 0, 0))
+
+        win.blit(title_text, (width // 2 - title_text.get_width() // 2, height // 2 - 80))
+        win.blit(start_text, (width // 2 - start_text.get_width() // 2, height // 2))
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+                waiting = False
+
+def restart_game():
+    global dino_y, dino_speed_y, is_jumping, obstacles, score
+    dino_y = height - dino_height - 20
+    dino_speed_y = 0
+    is_jumping = False
+    obstacles = [Obstacle(width + i * 300) for i in range(3)]
+    score = 0
+
+def game_over_screen():
+    font_large = pygame.font.SysFont("Arial", 50)
+    font_small = pygame.font.SysFont("Arial", 30)
+    game_over_text = font_large.render("Game Over", True, (255, 0, 0))
+    restart_text = font_small.render("нажмешь пробел или R и поиргаешь еще", True, (0, 0, 0))
+
+    win.fill((255, 255, 255))
+    win.blit(game_over_text, (width // 2 - 100, height // 2 - 50))
+    win.blit(restart_text, (width // 3 - 100, height // 2 + 20))
+    pygame.display.update()
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                waiting = False
+    restart_game()
+
+startgame()
+obstacles = [Obstacle(width + i * 350) for i in range(random.randint(1, 4))]
+score = 0
+font = pygame.font.SysFont("Arial", 30)
+
+clock = pygame.time.Clock()
+run = True
+
+while run:
+    clock.tick(30)
+    win.fill((255, 255, 255))
+    if score > 10:
+        for p in range(5):
+            win.fill((255 - p, 255 - p, 255 - p))
+        for p in range(5):
+            win.fill((250 - p, 250 - p, 250 - p))
+        for p in range(5):
+            win.fill((245 - p, 245 - p, 245 - p))
+        for p in range(5):
+            win.fill((240 - p, 240 - p, 240 - p))
+        for p in range(5):
+            win.fill((235 - p, 235 - p, 235 - p))
+        for p in range(5):
+            win.fill((230 - p, 230 - p, 230 - p))
+    if score > 12:
+        for l in range(5):
+            win.fill((225 - l, 225 - l, 225 - l))
+        for l in range(5):
+            win.fill((220 - l, 220 - l, 220 - l))
+        for l in range(5):
+            win.fill((215 - l, 215 - l, 215 - l))
+        for l in range(5):
+            win.fill((210 - l, 210 - l, 210 - l))
+        for l in range(5):
+            win.fill((205 - l, 205 - l, 205 - l))
+        for l in range(5):
+            win.fill((200 - l, 200 - l, 200 - l))
+    if score > 13:
+        for u in range(5):
+            win.fill((195 - u, 195 - u, 195 - u))
+        for u in range(5):
+            win.fill((190 - u, 190 - u, 190 - u))
+        for u in range(5):
+            win.fill((185 - u, 185 - u, 185 - u))
+        for u in range(5):
+            win.fill((180 - u, 180 - u, 180 - u))
+        for u in range(5):
+            win.fill((175 - u, 175 - u, 175 - u))
+        for u in range(5):
+            win.fill((170 - u, 170 - u, 170 - u))
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+    keys = pygame.key.get_pressed()
+    if not is_jumping and keys[pygame.K_SPACE]:
+        is_jumping = True
+        dino_speed_y = jump_height
+        jump_sound.play()
+
+    if is_jumping:
+        dino_speed_y += gravity
+        dino_y += dino_speed_y
+        if dino_y >= height - dino_height - 20:
+            dino_y = height - dino_height - 20
+            is_jumping = False
+
+    speed = 10 + (score // 5)
+
+    for obstacle in obstacles:
+        if obstacle.move(speed):
+            score += 1
+
+        if (dino_x < obstacle.x + obstacle.width and dino_x + dino_width > obstacle.x and
+            dino_y < obstacle.y + obstacle.height and dino_y + dino_height > obstacle.y):
+            game_over_screen()
+
+        obstacle.draw(win)
+
+    pygame.draw.rect(win, (0, 0, 0), (dino_x, dino_y, dino_width, dino_height))
+
+    score_text = font.render("Score: " + str(score), True, (0, 0, 0))
+    win.blit(score_text, (10, 10))
+
+    pygame.display.update()
+
+pygame.quit()
